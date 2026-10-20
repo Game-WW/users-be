@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16
+    container_name: users-be-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: users
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d users"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    container_name: users-be-app
+    environment:
+      PORT: "8082"
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: users
+      DB_SSLMODE: disable
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      JWT_SECRET: ${JWT_SECRET}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      APP_ENV: ${APP_ENV:-development}
+    ports:
+      - "${PORT:-8082}:8082"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
