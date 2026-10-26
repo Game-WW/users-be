@@ -1,4 +1,3 @@
-// Package clock — реальное время для порта commands.Clock.
 package clock
 
 import (

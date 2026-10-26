@@ -16,7 +16,7 @@ func (s *Server) Refresh(ctx context.Context, _ *userspb.RefreshRequest) (*users
 		return nil, toStatus(err)
 	}
 
-	if err := sendHeader(ctx, accessTokenMetaKey, result.AccessToken); err != nil {
+	if err := sendHeader(ctx, accessTokenMetaKey, result.AccessToken, refreshTokenMetaKey, result.RefreshToken); err != nil {
 		return nil, toStatus(err)
 	}
 

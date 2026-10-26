@@ -76,7 +76,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginResul
 	if err != nil {
 		return LoginResult{}, err
 	}
-	
+
 	sess, refreshToken := session.New(u.ID(), cmd.UserAgent, cmd.IP, now, h.refreshTTL)
 	if err := h.sessions.Create(ctx, sess); err != nil {
 		return LoginResult{}, fmt.Errorf("create session: %w", err)

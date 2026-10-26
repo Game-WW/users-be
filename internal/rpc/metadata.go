@@ -19,7 +19,6 @@ const (
 	logoutMetaKey      = "x-logout"
 )
 
-// metaValue возвращает первое значение ключа или "", если его нет.
 func metaValue(ctx context.Context, key string) string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -34,13 +33,11 @@ func metaValue(ctx context.Context, key string) string {
 	return value[0]
 }
 
-// clientIP берёт первый адрес из x-forwarded-for — это клиент, остальные — прокси по пути.
 func clientIP(ctx context.Context) string {
 	ip, _, _ := strings.Cut(metaValue(ctx, forwardedForMetaKey), ",")
 	return strings.TrimSpace(ip)
 }
 
-// sendHeader отправляет metadata ответа — gateway превращает её в cookie.
 func sendHeader(ctx context.Context, kv ...string) error {
 	return grpc.SetHeader(ctx, metadata.Pairs(kv...))
 }

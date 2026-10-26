@@ -19,7 +19,7 @@ type Repository struct {
 
 var (
 	_ commands.SessionWriter  = (*Repository)(nil)
-	_ commands.SessionReader  = (*Repository)(nil)
+	_ commands.SessionRotator = (*Repository)(nil)
 	_ commands.SessionRevoker = (*Repository)(nil)
 )
 
@@ -27,7 +27,6 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-// Create — id строки ставит БД (DEFAULT gen_random_uuid()), пустые user_agent и ip пишутся как NULL.
 func (r *Repository) Create(ctx context.Context, s *session.Session) error {
 	st := s.Snapshot()
 	_, err := r.db.Exec(ctx,
@@ -62,6 +61,22 @@ func (r *Repository) DeleteByTokenHash(ctx context.Context, hash string) error {
 	tag, err := r.db.Exec(ctx, `DELETE FROM refresh_tokens WHERE token_hash = $1`, hash)
 	if err != nil {
 		return fmt.Errorf("delete session: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("session: %w", errs.ErrNotFound)
+	}
+
+	return nil
+}
+
+func (r *Repository) Rotate(ctx context.Context, oldHash string, sess *session.Session) error {
+	state := sess.Snapshot()
+	tag, err := r.db.Exec(ctx,
+		`UPDATE refresh_tokens SET token_hash = $1, expires_at = $2 WHERE token_hash = $3`,
+		state.TokenHash, state.ExpiresAt, oldHash,
+	)
+	if err != nil {
+		return fmt.Errorf("rotate session: %w", err)
 	}
 	if tag.RowsAffected() == 0 {
 		return fmt.Errorf("session: %w", errs.ErrNotFound)

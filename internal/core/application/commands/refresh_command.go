@@ -5,5 +5,6 @@ type RefreshCommand struct {
 }
 
 type RefreshResult struct {
-	AccessToken string
+	AccessToken  string
+	RefreshToken string
 }

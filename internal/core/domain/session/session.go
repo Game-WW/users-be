@@ -48,9 +48,14 @@ func (s *Session) Snapshot() State {
 	return s.state
 }
 
-func (s *Session) ValidateRefresh(now time.Time) error {
+func (s *Session) Rotate(now time.Time, ttl time.Duration) (string, error) {
 	if !now.Before(s.state.ExpiresAt) {
-		return ErrExpired
+		return "", ErrExpired
 	}
-	return nil
+
+	token := rand.Text()
+	s.state.TokenHash = HashToken(token)
+	s.state.ExpiresAt = now.Add(ttl)
+
+	return token, nil
 }

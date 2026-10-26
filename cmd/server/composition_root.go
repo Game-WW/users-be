@@ -35,7 +35,7 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 
 	return rpc.NewServer(
 		commands.NewLoginHandler(verifier, users, sessions, access, clk, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
-		commands.NewRefreshHandler(sessions, access, clk, cfg.AccessTokenTTL),
+		commands.NewRefreshHandler(sessions, access, clk, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
 		commands.NewLogoutHandler(sessions),
 		queries.NewGetMeHandler(users),
 	), nil

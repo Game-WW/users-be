@@ -9,7 +9,6 @@ import (
 
 const maxConns = 20
 
-// NewPool открывает пул и сразу проверяет соединение — сервис не стартует без БД.
 func NewPool(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
 	cfg, err := pgxpool.ParseConfig(dsn)
 	if err != nil {

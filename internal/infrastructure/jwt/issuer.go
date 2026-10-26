@@ -1,4 +1,3 @@
-// Package jwt выпускает access-токены. Проверяет их gateway — тем же секретом и алгоритмом.
 package jwt
 
 import (
@@ -20,7 +19,6 @@ func NewIssuer(secret string) *Issuer {
 	return &Issuer{secret: []byte(secret)}
 }
 
-// claims — контракт с gateway: он принимает только HS256, читает user_id и требует exp (middleware/auth.go).
 type claims struct {
 	UserID string `json:"user_id"`
 	jwtlib.RegisteredClaims

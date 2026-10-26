@@ -30,8 +30,6 @@ func New(db *pgxpool.Pool) *Repository {
 	return &Repository{db: db}
 }
 
-// identityColumn — привязки хранятся колонками users.google_id / users.apple_id.
-// Имя колонки подставляется в SQL, поэтому только из этого списка.
 func identityColumn(p user.Provider) (string, error) {
 	switch p {
 	case user.ProviderGoogle:
@@ -89,7 +87,6 @@ func (r *Repository) Create(ctx context.Context, u *user.User, identity user.Ext
 		s.ID, s.UserName, s.Email, s.PhoneNumber, s.CreatedAt, identity.Subject,
 	)
 
-	// UNIQUE может сработать только на колонке провайдера: id — свежий uuid.
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
 		return fmt.Errorf("insert user: %w", commands.ErrIdentityTaken)

@@ -10,7 +10,6 @@ import (
 	"github.com/Game-WW/users-be/pkg/errs"
 )
 
-// idtoken не проверяет iss — проверяем сами.
 var issuers = map[string]bool{
 	"accounts.google.com":         true,
 	"https://accounts.google.com": true,
@@ -20,12 +19,10 @@ type Verifier struct {
 	clientID string
 }
 
-// NewVerifier — clientID обязателен: с пустым audience idtoken принимает токен любого приложения.
 func NewVerifier(clientID string) *Verifier {
 	return &Verifier{clientID: clientID}
 }
 
-// Verify проверяет подпись, срок, audience и issuer. Любая ошибка проверки — ErrUnauthenticated.
 func (v *Verifier) Verify(ctx context.Context, idToken string) (user.ExternalIdentity, error) {
 	payload, err := idtoken.Validate(ctx, idToken, v.clientID)
 	if err != nil {
