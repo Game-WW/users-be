@@ -3,60 +3,64 @@ package main
 import (
 	"context"
 	"log"
+	"net"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
-	"github.com/Game-WW/users-be/internal/config"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/jackc/pgx/v5/pgxpool"
+	userspb "github.com/Game-WW/gateway-be/gen/users"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
+
+	"github.com/Game-WW/users-be/internal/infrastructure/database"
 )
+
+const dbConnectTimeout = 10 * time.Second
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("config: .env not found, using defaults")
+		log.Println("config: .env not found, using environment")
 	}
 
-	cfg, err := config.Load()
+	cfg, err := loadConfig()
 	if err != nil {
-		log.Fatalf("fatal: %v", err)
+		log.Fatalf("config: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
-	poolCfg, err := pgxpool.ParseConfig(cfg.DSN())
+	connectCtx, cancel := context.WithTimeout(ctx, dbConnectTimeout)
+	pool, err := database.NewPool(connectCtx, cfg.DSN)
+	cancel()
 	if err != nil {
-		log.Fatalf("database: invalid configuration: %v", err)
-	}
-
-	pool, err := pgxpool.NewWithConfig(ctx, poolCfg)
-	if err != nil {
-		log.Fatalf("database: unable to connect to pool: %v", err)
+		log.Fatalf("database: %v", err)
 	}
 	defer pool.Close()
 
-	if err := pool.Ping(ctx); err != nil {
-		log.Fatalf("database: ping failed: %v", err)
+	srv, err := buildServer(cfg, pool)
+	if err != nil {
+		log.Fatalf("server: %v", err)
 	}
 
-	app := fiber.New(fiber.Config{
-		AppName:      "users-be",
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	})
+	grpcServer := grpc.NewServer()
+	userspb.RegisterUsersServiceServer(grpcServer, srv)
 
-	app.Use(cors.New(cors.Config{
-		AllowOrigins:     cfg.AllowedOrigins,
-		AllowHeaders:     "Authorization, Content-Type",
-		AllowCredentials: true,
-	}))
+	addr := ":" + strconv.Itoa(cfg.GRPCPort)
+	lis, err := net.Listen("tcp", addr)
+	if err != nil {
+		log.Fatalf("server: listen %s: %v", addr, err)
+	}
 
-	port := cfg.Port
-	addr := ":" + strconv.Itoa(port)
-	if err = app.Listen(addr); err != nil {
-		log.Fatalf("server: failed to listen on %s: %v", addr, err)
+	go func() {
+		<-ctx.Done()
+		log.Println("server: shutting down")
+		grpcServer.GracefulStop()
+	}()
+
+	log.Printf("server: grpc listening on %s", addr)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("server: serve: %v", err)
 	}
 }

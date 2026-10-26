@@ -1,15 +1,26 @@
 services:
   db:
-    image: postgres:16
+    build:
+      context: .
+      dockerfile: Dockerfile.db
     container_name: users-be-db
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: users
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_cron
+      - -c
+      - cron.database_name=users
+      - -c
+      - cron.host=/var/run/postgresql
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d users"]
       interval: 5s
@@ -17,10 +28,14 @@ services:
       retries: 10
 
   app:
-    build: .
+    build:
+      context: .
+      # go.mod: replace github.com/Game-WW/gateway-be => ../gateway-be — Dockerfile кладёт его в /gateway-be
+      additional_contexts:
+        gateway-be: ../gateway-be
     container_name: users-be-app
     environment:
-      PORT: "8082"
+      GRPC_PORT: "50051"
       DB_HOST: db
       DB_PORT: "5432"
       DB_USER: postgres
@@ -29,10 +44,10 @@ services:
       DB_SSLMODE: disable
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       JWT_SECRET: ${JWT_SECRET}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
       APP_ENV: ${APP_ENV:-development}
     ports:
-      - "${PORT:-8082}:8082"
+      - "${GRPC_PORT:-50051}:50051"
     depends_on:
       db:
         condition: service_healthy
