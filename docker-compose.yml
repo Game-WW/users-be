@@ -28,11 +28,7 @@ services:
       retries: 10
 
   app:
-    build:
-      context: .
-      # go.mod: replace github.com/Game-WW/gateway-be => ../gateway-be — Dockerfile кладёт его в /gateway-be
-      additional_contexts:
-        gateway-be: ../gateway-be
+    build: .
     container_name: users-be-app
     environment:
       GRPC_PORT: "50051"
@@ -43,6 +39,10 @@ services:
       DB_NAME: users
       DB_SSLMODE: disable
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID}
+      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET}
       JWT_SECRET: ${JWT_SECRET}
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
       APP_ENV: ${APP_ENV:-development}

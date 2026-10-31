@@ -13,10 +13,6 @@ import (
 
 var ErrIdentityTaken = errors.New("identity already linked to a user")
 
-type IdentityVerifier interface {
-	Verify(ctx context.Context, provider user.Provider, idToken string) (user.ExternalIdentity, error)
-}
-
 type UserRepository interface {
 	FindByIdentity(ctx context.Context, provider user.Provider, subject string) (*user.User, error)
 	Create(ctx context.Context, u *user.User, identity user.ExternalIdentity) error
@@ -27,7 +23,7 @@ type SessionWriter interface {
 }
 
 type LoginHandler struct {
-	identities IdentityVerifier
+	identities map[user.Provider]IdentityVerifier
 	users      UserRepository
 	sessions   SessionWriter
 	access     AccessTokenIssuer
@@ -37,7 +33,7 @@ type LoginHandler struct {
 }
 
 func NewLoginHandler(
-	identities IdentityVerifier,
+	identities map[user.Provider]IdentityVerifier,
 	users UserRepository,
 	sessions SessionWriter,
 	access AccessTokenIssuer,
@@ -56,16 +52,13 @@ func NewLoginHandler(
 }
 
 func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginResult, error) {
-	provider, err := user.ParseProvider(cmd.Provider)
-	if err != nil {
-		return LoginResult{}, err
+	fmt.Printf("DEBUG HANDLER: looking for provider=%s\n", cmd.Provider)
+	verifier, ok := h.identities[cmd.Provider]
+	if !ok {
+		return LoginResult{}, fmt.Errorf("provider %s is not configured: %w", cmd.Provider, errs.ErrInvalidArgument)
 	}
 
-	if cmd.IDToken == "" {
-		return LoginResult{}, errs.ErrUnauthenticated
-	}
-
-	identity, err := h.identities.Verify(ctx, provider, cmd.IDToken)
+	identity, err := verifier.Verify(ctx, cmd.Creds)
 	if err != nil {
 		return LoginResult{}, fmt.Errorf("verify identity: %w", err)
 	}

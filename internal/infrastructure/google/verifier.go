@@ -6,6 +6,7 @@ import (
 
 	"google.golang.org/api/idtoken"
 
+	"github.com/Game-WW/users-be/internal/core/application/commands" // <--- ДОБАВИТЬ
 	"github.com/Game-WW/users-be/internal/core/domain/user"
 	"github.com/Game-WW/users-be/pkg/errs"
 )
@@ -23,7 +24,13 @@ func NewVerifier(clientID string) *Verifier {
 	return &Verifier{clientID: clientID}
 }
 
-func (v *Verifier) Verify(ctx context.Context, idToken string) (user.ExternalIdentity, error) {
+func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (user.ExternalIdentity, error) {
+	idToken := creds.Token
+
+	if idToken == "" {
+		return user.ExternalIdentity{}, fmt.Errorf("empty id_token: %w", errs.ErrUnauthenticated)
+	}
+
 	payload, err := idtoken.Validate(ctx, idToken, v.clientID)
 	if err != nil {
 		return user.ExternalIdentity{}, fmt.Errorf("validate google id_token: %w: %w", errs.ErrUnauthenticated, err)

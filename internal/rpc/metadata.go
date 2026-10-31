@@ -14,6 +14,7 @@ const (
 	refreshTokenMetaKey  = "x-refresh-token"
 	userAgentMetaKey     = "x-user-agent"
 	forwardedForMetaKey  = "x-forwarded-for"
+	xAuthCodeMetaKey = "x-auth-code"
 
 	accessTokenMetaKey = "x-access-token"
 	logoutMetaKey      = "x-logout"

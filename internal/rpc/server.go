@@ -21,24 +21,35 @@ type (
 	getMeHandler interface {
 		Handle(context.Context, queries.GetMeQuery) (queries.GetMeResult, error)
 	}
+	listIdentitiesHandler interface {
+		Handle(context.Context, queries.ListIdentitiesQuery) (queries.ListIdentitiesResult, error)
+	}
 )
 
 type Server struct {
 	userspb.UnimplementedUsersServiceServer
 
-	login   loginHandler
-	refresh refreshHandler
-	logout  logoutHandler
-	getMe   getMeHandler
+	login          loginHandler
+	refresh        refreshHandler
+	logout         logoutHandler
+	getMe          getMeHandler
+	listIdentities listIdentitiesHandler
 }
 
 var _ userspb.UsersServiceServer = (*Server)(nil)
 
-func NewServer(login loginHandler, refresh refreshHandler, logout logoutHandler, getMe getMeHandler) *Server {
+func NewServer(
+	login loginHandler,
+	refresh refreshHandler,
+	logout logoutHandler,
+	getMe getMeHandler,
+	listIdentities listIdentitiesHandler,
+) *Server {
 	return &Server{
-		login:   login,
-		refresh: refresh,
-		logout:  logout,
-		getMe:   getMe,
+		login:          login,
+		refresh:        refresh,
+		logout:         logout,
+		getMe:          getMe,
+		listIdentities: listIdentities,
 	}
 }

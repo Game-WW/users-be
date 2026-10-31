@@ -1,8 +1,10 @@
 package commands
 
+import "github.com/Game-WW/users-be/internal/core/domain/user"
+
 type LoginCommand struct {
-	Provider  string
-	IDToken   string
+	Provider  user.Provider
+	Creds     AuthCredentials
 	UserAgent string
 	IP        string
 }

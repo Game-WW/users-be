@@ -1,6 +1,11 @@
 package commands
 
-import "time"
+import (
+	"context"
+	"time"
+
+	"github.com/Game-WW/users-be/internal/core/domain/user"
+)
 
 type Clock interface {
 	Now() time.Time
@@ -8,4 +13,13 @@ type Clock interface {
 
 type AccessTokenIssuer interface {
 	Issue(userID string, expiresAt time.Time) (string, error)
+}
+
+type AuthCredentials struct {
+	Token string // Google
+	Code  string // GitHub
+}
+
+type IdentityVerifier interface {
+	Verify(ctx context.Context, creds AuthCredentials) (user.ExternalIdentity, error)
 }
