@@ -15,6 +15,7 @@ const (
 	userAgentMetaKey     = "x-user-agent"
 	forwardedForMetaKey  = "x-forwarded-for"
 	xAuthCodeMetaKey     = "x-auth-code"
+	xCodeVerifierMetaKey = "x-code-verifier"
 
 	accessTokenMetaKey = "x-access-token"
 	logoutMetaKey      = "x-logout"
@@ -48,6 +49,6 @@ func bearerToken(ctx context.Context) string {
 	if !ok {
 		return ""
 	}
-	
+
 	return token
 }

@@ -34,7 +34,7 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 		return user.ExternalIdentity{}, fmt.Errorf("empty code: %w", errs.ErrUnauthenticated)
 	}
 
-	accessToken, err := v.exchangeCode(ctx, code)
+	accessToken, err := v.exchangeCode(ctx, code, creds.CodeVerifier)
 	if err != nil {
 		return user.ExternalIdentity{}, err
 	}
@@ -56,11 +56,14 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 	}, nil
 }
 
-func (v *Verifier) exchangeCode(ctx context.Context, code string) (string, error) {
+func (v *Verifier) exchangeCode(ctx context.Context, code, codeVerifier string) (string, error) {
 	data := url.Values{}
 	data.Set("client_id", v.clientID)
 	data.Set("client_secret", v.clientSecret)
 	data.Set("code", code)
+	if codeVerifier != "" {
+		data.Set("code_verifier", codeVerifier)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://github.com/login/oauth/access_token", strings.NewReader(data.Encode()))
 	if err != nil {
@@ -76,20 +79,21 @@ func (v *Verifier) exchangeCode(ctx context.Context, code string) (string, error
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("github auth error: %s, body: %s: %w", resp.Status, string(body), errs.ErrUnauthenticated)
-	}
 
 	var tokenResp struct {
-		AccessToken string `json:"access_token"`
-		Error       string `json:"error"`
+		AccessToken      string `json:"access_token"`
+		Error            string `json:"error"`
+		ErrorDescription string `json:"error_description"`
 	}
-	if err := json.Unmarshal(body, &tokenResp); err != nil {
-		return "", fmt.Errorf("unmarshal token: %w", err)
+	decodeErr := json.Unmarshal(body, &tokenResp)
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("github auth error: %s (%s): %w", tokenResp.Error, tokenResp.ErrorDescription, errs.ErrUnauthenticated)
 	}
-
+	if decodeErr != nil {
+		return "", fmt.Errorf("unmarshal token: %w", decodeErr)
+	}
 	if tokenResp.AccessToken == "" {
-		return "", fmt.Errorf("github error: %s: %w", tokenResp.Error, errs.ErrUnauthenticated)
+		return "", fmt.Errorf("github error: %s (%s): %w", tokenResp.Error, tokenResp.ErrorDescription, errs.ErrUnauthenticated)
 	}
 
 	return tokenResp.AccessToken, nil

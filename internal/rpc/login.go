@@ -14,9 +14,14 @@ func (s *Server) Login(ctx context.Context, req *userspb.LoginRequest) (*userspb
 		return nil, toStatus(err)
 	}
 
+	code := metaValue(ctx, xAuthCodeMetaKey)
+	codeVerifier := metaValue(ctx, xCodeVerifierMetaKey)
+	authorization := bearerToken(ctx)
+
 	creds := commands.AuthCredentials{
-		Token: bearerToken(ctx),                 // Для Google
-		Code:  metaValue(ctx, xAuthCodeMetaKey), // Для GitHub
+		Token:        authorization, // Для Google
+		Code:         code,          // Для GitHub
+		CodeVerifier: codeVerifier,  // Для GitHub PKCE
 	}
 
 	result, err := s.login.Handle(ctx, commands.LoginCommand{

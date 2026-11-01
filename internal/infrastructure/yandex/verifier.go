@@ -34,7 +34,7 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 		return user.ExternalIdentity{}, fmt.Errorf("empty code: %w", errs.ErrUnauthenticated)
 	}
 
-	accessToken, err := v.exchangeCode(ctx, code)
+	accessToken, err := v.exchangeCode(ctx, code, creds.CodeVerifier)
 	if err != nil {
 		return user.ExternalIdentity{}, err
 	}
@@ -51,12 +51,15 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 	}, nil
 }
 
-func (v *Verifier) exchangeCode(ctx context.Context, code string) (string, error) {
+func (v *Verifier) exchangeCode(ctx context.Context, code, codeVerifier string) (string, error) {
 	data := url.Values{}
 	data.Set("grant_type", "authorization_code")
 	data.Set("code", code)
 	data.Set("client_id", v.clientID)
 	data.Set("client_secret", v.clientSecret)
+	if codeVerifier != "" {
+		data.Set("code_verifier", codeVerifier)
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://oauth.yandex.ru/token", strings.NewReader(data.Encode()))
 	if err != nil {
