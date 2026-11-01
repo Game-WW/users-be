@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 
 	userspb "github.com/Game-WW/gateway-be/gen/users"
 	"github.com/Game-WW/users-be/internal/core/application/commands"
@@ -10,15 +9,14 @@ import (
 )
 
 func (s *Server) Login(ctx context.Context, req *userspb.LoginRequest) (*userspb.LoginResponse, error) {
-	fmt.Printf("DEBUG LOGIN: provider=%s, code='%s'\n", req.GetProvider(), metaValue(ctx, "x-auth-code"))
 	provider, err := user.ParseProvider(req.Provider)
 	if err != nil {
 		return nil, toStatus(err)
 	}
 
 	creds := commands.AuthCredentials{
-		Token: metaValue(ctx, authorizationMetaKey), // Для Google
-		Code:  metaValue(ctx, xAuthCodeMetaKey),   // Для GitHub
+		Token: bearerToken(ctx),                 // Для Google
+		Code:  metaValue(ctx, xAuthCodeMetaKey), // Для GitHub
 	}
 
 	result, err := s.login.Handle(ctx, commands.LoginCommand{

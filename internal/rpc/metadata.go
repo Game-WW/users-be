@@ -14,7 +14,7 @@ const (
 	refreshTokenMetaKey  = "x-refresh-token"
 	userAgentMetaKey     = "x-user-agent"
 	forwardedForMetaKey  = "x-forwarded-for"
-	xAuthCodeMetaKey = "x-auth-code"
+	xAuthCodeMetaKey     = "x-auth-code"
 
 	accessTokenMetaKey = "x-access-token"
 	logoutMetaKey      = "x-logout"
@@ -41,4 +41,13 @@ func clientIP(ctx context.Context) string {
 
 func sendHeader(ctx context.Context, kv ...string) error {
 	return grpc.SetHeader(ctx, metadata.Pairs(kv...))
+}
+
+func bearerToken(ctx context.Context) string {
+	token, ok := strings.CutPrefix(metaValue(ctx, authorizationMetaKey), "Bearer ")
+	if !ok {
+		return ""
+	}
+	
+	return token
 }

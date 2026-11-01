@@ -34,27 +34,20 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 		return user.ExternalIdentity{}, fmt.Errorf("empty code: %w", errs.ErrUnauthenticated)
 	}
 
-	fmt.Printf("DEBUG GITHUB: starting exchange for code=%s\n", code)
 	accessToken, err := v.exchangeCode(ctx, code)
 	if err != nil {
-		fmt.Printf("DEBUG GITHUB: exchange failed: %v\n", err)
 		return user.ExternalIdentity{}, err
 	}
-	fmt.Printf("DEBUG GITHUB: got access token: %s...\n", accessToken[:4])
 
 	ghUser, err := v.getUser(ctx, accessToken)
 	if err != nil {
-		fmt.Printf("DEBUG GITHUB: get user failed: %v\n", err)
 		return user.ExternalIdentity{}, err
 	}
-	fmt.Printf("DEBUG GITHUB: got user ID: %d\n", ghUser.ID)
 
 	email, err := v.getPrimaryEmail(ctx, accessToken)
 	if err != nil {
-		fmt.Printf("DEBUG GITHUB: get email failed: %v\n", err)
 		return user.ExternalIdentity{}, err
 	}
-	fmt.Printf("DEBUG GITHUB: got email: %s\n", email)
 
 	return user.ExternalIdentity{
 		Provider: user.ProviderGitHub,

@@ -52,7 +52,6 @@ func NewLoginHandler(
 }
 
 func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginResult, error) {
-	fmt.Printf("DEBUG HANDLER: looking for provider=%s\n", cmd.Provider)
 	verifier, ok := h.identities[cmd.Provider]
 	if !ok {
 		return LoginResult{}, fmt.Errorf("provider %s is not configured: %w", cmd.Provider, errs.ErrInvalidArgument)
