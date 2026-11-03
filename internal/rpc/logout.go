@@ -7,7 +7,10 @@ import (
 	"github.com/Game-WW/users-be/internal/core/application/commands"
 )
 
-func (s *Server) Logout(ctx context.Context, _ *userspb.LogoutRequest) (*userspb.LogoutResponse, error) {
+func (s *Server) Logout(
+	ctx context.Context,
+	_ *userspb.LogoutRequest,
+	) (*userspb.LogoutResponse, error) {
 	cmd := commands.LogoutCommand{
 		RefreshToken: metaValue(ctx, refreshTokenMetaKey),
 	}

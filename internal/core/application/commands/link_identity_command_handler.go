@@ -50,7 +50,7 @@ func (h *LinkIdentityHandler) Handle(ctx context.Context, cmd LinkIdentityComman
 			return LinkIdentityResult{Provider: identity.Provider, Email: identity.Email}, nil
 		}
 
-		return LinkIdentityResult{}, fmt.Errorf("identity is already linked to another user: %w", ErrIdentityTaken)
+		return LinkIdentityResult{}, fmt.Errorf("identity is already linked to another user: %w", user.ErrIdentityTaken)
 	}
 
 	if !errors.Is(err, errs.ErrNotFound) {

@@ -11,8 +11,6 @@ import (
 	"github.com/Game-WW/users-be/pkg/errs"
 )
 
-var ErrIdentityTaken = errors.New("identity already linked to a user")
-
 type UserRepository interface {
 	FindByIdentity(ctx context.Context, provider user.Provider, subject string) (*user.User, error)
 	Create(ctx context.Context, u *user.User, identity user.ExternalIdentity) error
@@ -96,7 +94,7 @@ func (h *LoginHandler) findOrCreate(ctx context.Context, identity user.ExternalI
 		return nil, err
 	}
 	err = h.users.Create(ctx, u, identity)
-	if errors.Is(err, ErrIdentityTaken) {
+	if errors.Is(err, user.ErrIdentityTaken) {
 		u, err = h.users.FindByIdentity(ctx, identity.Provider, identity.Subject)
 		if err != nil {
 			return nil, fmt.Errorf("find user after conflict: %w", err)

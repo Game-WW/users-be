@@ -8,7 +8,10 @@ import (
 	"github.com/Game-WW/users-be/internal/core/domain/user"
 )
 
-func (s *Server) Login(ctx context.Context, req *userspb.LoginRequest) (*userspb.LoginResponse, error) {
+func (s *Server) Login(
+	ctx context.Context,
+	req *userspb.LoginRequest,
+	) (*userspb.LoginResponse, error) {
 	provider, err := user.ParseProvider(req.Provider)
 	if err != nil {
 		return nil, toStatus(err)

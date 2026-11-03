@@ -27,6 +27,9 @@ type (
 	linkIdentityHandler interface {
 		Handle(context.Context, commands.LinkIdentityCommand) (commands.LinkIdentityResult, error)
 	}
+	unlinkIdentityHandler interface {
+		Handle(context.Context, commands.UnlinkIdentityCommand) error
+	}
 )
 
 type Server struct {
@@ -38,6 +41,7 @@ type Server struct {
 	getMe          getMeHandler
 	listIdentities listIdentitiesHandler
 	linkIdentity   linkIdentityHandler
+	unlinkIdentity unlinkIdentityHandler
 }
 
 var _ userspb.UsersServiceServer = (*Server)(nil)
@@ -49,6 +53,7 @@ func NewServer(
 	getMe getMeHandler,
 	listIdentities listIdentitiesHandler,
 	linkIdentity linkIdentityHandler,
+	unlinkIdentity unlinkIdentityHandler,
 ) *Server {
 	return &Server{
 		login:          login,
@@ -57,5 +62,6 @@ func NewServer(
 		getMe:          getMe,
 		listIdentities: listIdentities,
 		linkIdentity:   linkIdentity,
+		unlinkIdentity: unlinkIdentity,
 	}
 }

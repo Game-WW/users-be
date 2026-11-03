@@ -8,7 +8,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) ListIdentities(ctx context.Context, _ *userspb.ListIdentitiesRequest) (*userspb.ListIdentitiesResponse, error) {
+func (s *Server) ListIdentities(
+	ctx context.Context,
+	_ *userspb.ListIdentitiesRequest,
+	) (*userspb.ListIdentitiesResponse, error) {
 	result, err := s.listIdentities.Handle(ctx, queries.ListIdentitiesQuery{
 		UserID: metaValue(ctx, userIDMetaKey),
 	})

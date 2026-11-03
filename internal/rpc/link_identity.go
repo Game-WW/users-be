@@ -8,7 +8,10 @@ import (
 	"github.com/Game-WW/users-be/internal/core/domain/user"
 )
 
-func (s *Server) LinkIdentity(ctx context.Context, req *userspb.LinkIdentityRequest) (*userspb.LinkIdentityResponse, error) {
+func (s *Server) LinkIdentity(
+	ctx context.Context,
+	req *userspb.LinkIdentityRequest,
+	) (*userspb.LinkIdentityResponse, error) {
 	provider, err := user.ParseProvider(req.GetProvider())
 	if err != nil {
 		return nil, toStatus(err)

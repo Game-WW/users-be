@@ -49,5 +49,6 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 		queries.NewGetMeHandler(users),
 		queries.NewListIdentitiesHandler(users),
 		commands.NewLinkIdentityHandler(verifiers, users, clk),
+		commands.NewUnlinkIdentityHandler(users),
 	), nil
 }

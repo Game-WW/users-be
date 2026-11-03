@@ -8,7 +8,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Server) GetMe(ctx context.Context, _ *userspb.GetMeRequest) (*userspb.GetMeResponse, error) {
+func (s *Server) GetMe(
+	ctx context.Context,
+	_ *userspb.GetMeRequest,
+	) (*userspb.GetMeResponse, error) {
 	result, err := s.getMe.Handle(ctx, queries.GetMeQuery{UserID: metaValue(ctx, userIDMetaKey)})
 	if err != nil {
 		return nil, toStatus(err)
