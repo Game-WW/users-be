@@ -27,7 +27,6 @@ func toProtoUser(r queries.GetMeResult) *userspb.User {
 		Id:               r.ID,
 		Nickname:         r.Nickname,
 		CreatedAt:        timestamppb.New(r.CreatedAt),
-		AvatarUrl:        r.AvatarURL,
 		Location:         r.Location,
 		ShowOnlineStatus: r.ShowOnlineStatus,
 	}

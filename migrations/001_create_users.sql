@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
     nickname            TEXT NOT NULL DEFAULT ('Guest' || nextval('user_nickname_seq')::TEXT),
     location            TEXT NOT NULL DEFAULT '',
     show_online_status  BOOLEAN NOT NULL DEFAULT TRUE,
-    avatar_url          TEXT,
     password_hash       TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );

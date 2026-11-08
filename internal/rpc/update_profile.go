@@ -18,7 +18,6 @@ func (s *Server) UpdateProfile(ctx context.Context, req *userspb.UpdateProfileRe
 	err := s.updateProfile.Handle(ctx, commands.UpdateProfileCommand{
 		UserID:           userID,
 		Nickname:         req.Nickname,
-		AvatarURL:        req.AvatarUrl,
 		Location:         req.Location,
 		ShowOnlineStatus: req.ShowOnlineStatus,
 	})

@@ -26,7 +26,6 @@ func (h *UpdateProfileHandler) Handle(ctx context.Context, cmd UpdateProfileComm
 	}
 
 	hasNoFieldsToUpdate := cmd.Nickname == nil &&
-		cmd.AvatarURL == nil &&
 		cmd.Location == nil &&
 		cmd.ShowOnlineStatus == nil
 	if hasNoFieldsToUpdate {

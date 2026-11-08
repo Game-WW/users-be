@@ -19,13 +19,6 @@ func (r *Repository) UpdateProfile(ctx context.Context, cmd commands.UpdateProfi
 	if cmd.Nickname != nil {
 		update = update.Set("nickname", *cmd.Nickname)
 	}
-	if cmd.AvatarURL != nil {
-		if *cmd.AvatarURL == "" {
-			update = update.Set("avatar_url", nil)
-		} else {
-			update = update.Set("avatar_url", *cmd.AvatarURL)
-		}
-	}
 	if cmd.Location != nil {
 		update = update.Set("location", *cmd.Location)
 	}

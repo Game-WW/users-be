@@ -9,7 +9,6 @@ type GetMeQuery struct {
 type GetMeResult struct {
 	ID               string
 	Nickname         *string
-	AvatarURL        *string
 	Location         *string
 	ShowOnlineStatus bool
 	CreatedAt        time.Time
