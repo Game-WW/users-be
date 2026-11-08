@@ -29,6 +29,35 @@ migrations/                         SQL-схема и задания pg_cron
 
 Ядро зависит от интерфейсов, а gRPC, PostgreSQL, GeoIP и OAuth-провайдеры подключаются во внешних слоях.
 
+### Зависимости слоёв
+
+Стрелка — «импортирует». Ядро ни от кого не зависит, все зависят от него.
+
+```mermaid
+flowchart TD
+    main["cmd/server<br/>composition root"]
+    rpc["rpc"]
+    app["core/application<br/>commands, queries + порты"]
+    domain["core/domain<br/>user, session"]
+    repo["repository<br/>user_repo, session_repo"]
+    infra["infrastructure<br/>google, identity, jwt, clock, database"]
+
+    main --> rpc
+    main --> repo
+    main --> infra
+    main --> app
+    rpc --> app
+    app --> domain
+    repo --> app
+    repo --> domain
+    infra --> app
+    infra --> domain
+```
+
+- `rpc` знает только сценарии (`application`), домен не трогает.
+- Порты объявлены там, где ими пользуются: общие для нескольких команд — `commands/ports.go`, остальные — в файле своего обработчика.
+- Адаптеры реализуют порты и проверяют это при компиляции: `var _ commands.SessionRotator = (*Repository)(nil)`.
+
 ## HTTP API
 
 Все HTTP-маршруты обслуживает gateway-be. За исключением входа, обновления токена и выхода, запросы требуют cookie `access_token`.
