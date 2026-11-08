@@ -10,14 +10,19 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
-func (r *Repository) Create(ctx context.Context, u *user.User, identity user.ExternalIdentity) error {
+func (r *Repository) Create(
+	ctx context.Context,
+	u *user.User,
+	identity user.ExternalIdentity,
+	location string,
+) error {
 	state := u.Snapshot()
 
 	err := pgx.BeginFunc(ctx, r.db, func(tx pgx.Tx) error {
 		sql, args, err := r.builder.
 			Insert("users").
-			Columns("id", "username", "email", "phone_number", "created_at").
-			Values(state.ID, state.UserName, state.Email, state.PhoneNumber, state.CreatedAt).
+			Columns("id", "created_at", "location").
+			Values(state.ID, state.CreatedAt, location).
 			ToSql()
 		if err != nil {
 			return fmt.Errorf("build insert user: %w", err)

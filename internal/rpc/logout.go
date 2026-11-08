@@ -10,7 +10,7 @@ import (
 func (s *Server) Logout(
 	ctx context.Context,
 	_ *userspb.LogoutRequest,
-	) (*userspb.LogoutResponse, error) {
+) (*userspb.LogoutResponse, error) {
 	cmd := commands.LogoutCommand{
 		RefreshToken: metaValue(ctx, refreshTokenMetaKey),
 	}

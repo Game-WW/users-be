@@ -11,7 +11,7 @@ import (
 func (s *Server) Login(
 	ctx context.Context,
 	req *userspb.LoginRequest,
-	) (*userspb.LoginResponse, error) {
+) (*userspb.LoginResponse, error) {
 	provider, err := user.ParseProvider(req.Provider)
 	if err != nil {
 		return nil, toStatus(err)

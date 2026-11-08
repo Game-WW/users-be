@@ -4,8 +4,8 @@ cloud.google.com/go/auth/oauth2adapt v0.2.8 h1:keo8NaayQZ6wimpNSmW5OPc283g65QNIi
 cloud.google.com/go/auth/oauth2adapt v0.2.8/go.mod h1:XQ9y31RkqZCcwJWNSx2Xvric3RrU88hAYYbjDWYDL+c=
 cloud.google.com/go/compute/metadata v0.9.0 h1:pDUj4QMoPejqq20dK0Pg2N4yG9zIkYGdBtwLoEkH9Zs=
 cloud.google.com/go/compute/metadata v0.9.0/go.mod h1:E0bWwX5wTnLPedCKqk3pJmVgCBSM6qQI1yTBdEb3C10=
-github.com/Game-WW/gateway-be v0.0.0-20261027193735-f9fe4b758cf5 h1:q/fJK0uJxQshM1x07RN7SZT48u6AhUvYEv3u0k3S18I=
-github.com/Game-WW/gateway-be v0.0.0-20261027193735-f9fe4b758cf5/go.mod h1:7LCuhz03JnaLsFuF8cZEaEURb24uZe2vdkrvrJlCa2k=
+github.com/Game-WW/gateway-be v0.0.0-20261108150246-a3408449944e h1:SlcxAZFovrjQzKgUYBCZTm+Varh/s9b8t9viXVcpH8I=
+github.com/Game-WW/gateway-be v0.0.0-20261108150246-a3408449944e/go.mod h1:7LCuhz03JnaLsFuF8cZEaEURb24uZe2vdkrvrJlCa2k=
 github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8afzqM=
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

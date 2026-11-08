@@ -13,7 +13,7 @@ import (
 
 func (r *Repository) FindByIdentity(ctx context.Context, provider user.Provider, subject string) (*user.User, error) {
 	sql, args, err := r.builder.
-		Select("u.id::text", "u.username", "u.email", "u.phone_number", "u.created_at").
+		Select("u.id::text", "u.nickname", "u.created_at").
 		From("users u").
 		Join("user_identities i ON i.user_id = u.id").
 		Where(sq.Eq{"i.provider": provider, "i.subject": subject}).
@@ -24,7 +24,7 @@ func (r *Repository) FindByIdentity(ctx context.Context, provider user.Provider,
 
 	var state user.State
 	err = r.db.QueryRow(ctx, sql, args...).
-		Scan(&state.ID, &state.UserName, &state.Email, &state.PhoneNumber, &state.CreatedAt)
+		Scan(&state.ID, &state.Nickname, &state.CreatedAt)
 
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, fmt.Errorf("user by %s: %w", provider, errs.ErrNotFound)

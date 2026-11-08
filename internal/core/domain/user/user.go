@@ -8,11 +8,9 @@ import (
 )
 
 type State struct {
-	ID          string
-	UserName    *string
-	Email       *string
-	PhoneNumber *string
-	CreatedAt   time.Time
+	ID        string
+	Nickname  *string
+	CreatedAt time.Time
 }
 
 type User struct {
@@ -24,15 +22,10 @@ func New(identity ExternalIdentity, now time.Time) (*User, error) {
 		return nil, errors.New("user: empty identity subject")
 	}
 
-	u := &User{state: State{ID: uuid.NewString(), CreatedAt: now}}
-	if identity.Name != "" {
-		u.state.UserName = &identity.Name
-	}
-	if identity.Email != "" {
-		u.state.Email = &identity.Email
-	}
-
-	return u, nil
+	return &User{state: State{
+		ID:        uuid.NewString(),
+		CreatedAt: now,
+	}}, nil
 }
 
 func Restore(state State) *User {

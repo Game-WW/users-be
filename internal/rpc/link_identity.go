@@ -11,7 +11,7 @@ import (
 func (s *Server) LinkIdentity(
 	ctx context.Context,
 	req *userspb.LinkIdentityRequest,
-	) (*userspb.LinkIdentityResponse, error) {
+) (*userspb.LinkIdentityResponse, error) {
 	provider, err := user.ParseProvider(req.GetProvider())
 	if err != nil {
 		return nil, toStatus(err)

@@ -9,6 +9,7 @@ import (
 	"github.com/Game-WW/users-be/internal/core/application/queries"
 	"github.com/Game-WW/users-be/internal/core/domain/user"
 	"github.com/Game-WW/users-be/internal/infrastructure/clock"
+	"github.com/Game-WW/users-be/internal/infrastructure/geoip"
 	"github.com/Game-WW/users-be/internal/infrastructure/github"
 	"github.com/Game-WW/users-be/internal/infrastructure/google"
 	"github.com/Game-WW/users-be/internal/infrastructure/jwt"
@@ -20,10 +21,11 @@ import (
 
 func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 	var (
-		users    = user_repo.New(pool)
-		sessions = session_repo.New(pool)
-		access   = jwt.NewIssuer(cfg.JWTSecret)
-		clk      = clock.Clock{}
+		users            = user_repo.New(pool)
+		sessions         = session_repo.New(pool)
+		access           = jwt.NewIssuer(cfg.JWTSecret)
+		clk              = clock.Clock{}
+		locationResolver = geoip.New()
 	)
 
 	verifiers := make(map[user.Provider]commands.IdentityVerifier)
@@ -43,12 +45,13 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 	}
 
 	return rpc.NewServer(
-		commands.NewLoginHandler(verifiers, users, sessions, access, clk, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
+		commands.NewLoginHandler(verifiers, users, sessions, access, clk, locationResolver, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
 		commands.NewRefreshHandler(sessions, access, clk, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
 		commands.NewLogoutHandler(sessions),
 		queries.NewGetMeHandler(users),
 		queries.NewListIdentitiesHandler(users),
 		commands.NewLinkIdentityHandler(verifiers, users, clk),
 		commands.NewUnlinkIdentityHandler(users),
+		commands.NewUpdateProfileHandler(users),
 	), nil
 }

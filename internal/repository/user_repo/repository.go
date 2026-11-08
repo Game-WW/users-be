@@ -18,6 +18,7 @@ var (
 	_ queries.LinkedIdentitiesReader = (*Repository)(nil)
 	_ commands.IdentityLinker        = (*Repository)(nil)
 	_ commands.IdentityUnlicker      = (*Repository)(nil)
+	_ commands.ProfileUpdater        = (*Repository)(nil)
 )
 
 func New(db *pgxpool.Pool) *Repository {

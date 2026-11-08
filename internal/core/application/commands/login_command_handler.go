@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/Game-WW/users-be/internal/core/domain/session"
@@ -13,11 +14,15 @@ import (
 
 type UserRepository interface {
 	FindByIdentity(ctx context.Context, provider user.Provider, subject string) (*user.User, error)
-	Create(ctx context.Context, u *user.User, identity user.ExternalIdentity) error
+	Create(ctx context.Context, u *user.User, identity user.ExternalIdentity, location string) error
 }
 
 type SessionWriter interface {
 	Create(ctx context.Context, s *session.Session) error
+}
+
+type LocationResolver interface {
+	Resolve(ctx context.Context, ip string) (string, error)
 }
 
 type LoginHandler struct {
@@ -26,6 +31,7 @@ type LoginHandler struct {
 	sessions   SessionWriter
 	access     AccessTokenIssuer
 	clock      Clock
+	location   LocationResolver
 	accessTTL  time.Duration
 	refreshTTL time.Duration
 }
@@ -36,6 +42,7 @@ func NewLoginHandler(
 	sessions SessionWriter,
 	access AccessTokenIssuer,
 	clock Clock,
+	location LocationResolver,
 	accessTTL, refreshTTL time.Duration,
 ) *LoginHandler {
 	return &LoginHandler{
@@ -44,6 +51,7 @@ func NewLoginHandler(
 		sessions:   sessions,
 		access:     access,
 		clock:      clock,
+		location:   location,
 		accessTTL:  accessTTL,
 		refreshTTL: refreshTTL,
 	}
@@ -62,7 +70,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginResul
 
 	now := h.clock.Now()
 
-	u, err := h.findOrCreate(ctx, identity, now)
+	u, err := h.findOrCreate(ctx, identity, now, cmd.IP)
 	if err != nil {
 		return LoginResult{}, err
 	}
@@ -80,7 +88,7 @@ func (h *LoginHandler) Handle(ctx context.Context, cmd LoginCommand) (LoginResul
 	return LoginResult{AccessToken: accessToken, RefreshToken: refreshToken}, nil
 }
 
-func (h *LoginHandler) findOrCreate(ctx context.Context, identity user.ExternalIdentity, now time.Time) (*user.User, error) {
+func (h *LoginHandler) findOrCreate(ctx context.Context, identity user.ExternalIdentity, now time.Time, clientIP string) (*user.User, error) {
 	u, err := h.users.FindByIdentity(ctx, identity.Provider, identity.Subject)
 	if err == nil {
 		return u, nil
@@ -93,7 +101,17 @@ func (h *LoginHandler) findOrCreate(ctx context.Context, identity user.ExternalI
 	if err != nil {
 		return nil, err
 	}
-	err = h.users.Create(ctx, u, identity)
+
+	location := ""
+	if clientIP != "" && h.location != nil {
+		location, err = h.location.Resolve(ctx, clientIP)
+		if err != nil {
+			log.Printf("geoip: resolve client location: %v", err)
+			location = ""
+		}
+	}
+
+	err = h.users.Create(ctx, u, identity, location)
 	if errors.Is(err, user.ErrIdentityTaken) {
 		u, err = h.users.FindByIdentity(ctx, identity.Provider, identity.Subject)
 		if err != nil {

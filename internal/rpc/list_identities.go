@@ -11,7 +11,7 @@ import (
 func (s *Server) ListIdentities(
 	ctx context.Context,
 	_ *userspb.ListIdentitiesRequest,
-	) (*userspb.ListIdentitiesResponse, error) {
+) (*userspb.ListIdentitiesResponse, error) {
 	result, err := s.listIdentities.Handle(ctx, queries.ListIdentitiesQuery{
 		UserID: metaValue(ctx, userIDMetaKey),
 	})

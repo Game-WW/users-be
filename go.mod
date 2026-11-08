@@ -3,7 +3,8 @@ module github.com/Game-WW/users-be
 go 1.26.1
 
 require (
-	github.com/Game-WW/gateway-be v0.0.0-20261027193735-f9fe4b758cf5
+	github.com/Game-WW/gateway-be v0.0.0-20261108150246-a3408449944e
+	github.com/Masterminds/squirrel v1.5.4
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jackc/pgx/v5 v5.11.0
 	github.com/joho/godotenv v1.5.1
@@ -16,7 +17,6 @@ require (
 	cloud.google.com/go/auth v0.20.0 // indirect
 	cloud.google.com/go/auth/oauth2adapt v0.2.8 // indirect
 	cloud.google.com/go/compute/metadata v0.9.0 // indirect
-	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect

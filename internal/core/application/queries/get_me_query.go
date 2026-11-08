@@ -7,9 +7,10 @@ type GetMeQuery struct {
 }
 
 type GetMeResult struct {
-	ID          string
-	UserName    *string
-	Email       *string
-	PhoneNumber *string
-	CreatedAt   time.Time
+	ID               string
+	Nickname         *string
+	AvatarURL        *string
+	Location         *string
+	ShowOnlineStatus bool
+	CreatedAt        time.Time
 }

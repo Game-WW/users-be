@@ -11,7 +11,7 @@ import (
 func (s *Server) GetMe(
 	ctx context.Context,
 	_ *userspb.GetMeRequest,
-	) (*userspb.GetMeResponse, error) {
+) (*userspb.GetMeResponse, error) {
 	result, err := s.getMe.Handle(ctx, queries.GetMeQuery{UserID: metaValue(ctx, userIDMetaKey)})
 	if err != nil {
 		return nil, toStatus(err)
@@ -24,10 +24,11 @@ func (s *Server) GetMe(
 
 func toProtoUser(r queries.GetMeResult) *userspb.User {
 	return &userspb.User{
-		Id:          r.ID,
-		Username:    r.UserName,
-		Email:       r.Email,
-		PhoneNumber: r.PhoneNumber,
-		CreatedAt:   timestamppb.New(r.CreatedAt),
+		Id:               r.ID,
+		Nickname:         r.Nickname,
+		CreatedAt:        timestamppb.New(r.CreatedAt),
+		AvatarUrl:        r.AvatarURL,
+		Location:         r.Location,
+		ShowOnlineStatus: r.ShowOnlineStatus,
 	}
 }

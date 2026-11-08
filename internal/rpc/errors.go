@@ -20,6 +20,8 @@ func toStatus(err error) error {
 		return status.Error(codes.Unauthenticated, "unauthenticated")
 	case errors.Is(err, errs.ErrInvalidArgument):
 		return status.Error(codes.InvalidArgument, "invalid argument")
+	case errors.Is(err, errs.ErrNicknameTaken):
+		return status.Error(codes.AlreadyExists, "nickname already taken")
 	case errors.Is(err, errs.ErrLastIdentity):
 		return status.Error(codes.FailedPrecondition, "cannot unlink the last identity")
 	default:
