@@ -3,7 +3,6 @@ package session
 import (
 	"crypto/rand"
 	"errors"
-	"fmt"
 	"time"
 )
 
