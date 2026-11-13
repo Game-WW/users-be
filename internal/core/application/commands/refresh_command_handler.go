@@ -44,6 +44,9 @@ func (h *RefreshHandler) Handle(ctx context.Context, cmd RefreshCommand) (Refres
 	now := h.clock.Now()
 	refreshToken, err := sess.Rotate(now, h.refreshTTL)
 	if err != nil {
+		if errors.Is(err, session.ErrExpired) {
+			return RefreshResult{}, fmt.Errorf("rotate expired session: %w", errs.ErrUnauthenticated)
+		}
 		return RefreshResult{}, err
 	}
 

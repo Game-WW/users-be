@@ -67,7 +67,7 @@ func (r *Repository) UnlinkIdentity(ctx context.Context, userID string, provider
 		return fmt.Errorf("count remaining identities: %w", err)
 	}
 	if remaining == 0 {
-		return fmt.Errorf("unlink identity: %w", errs.ErrLastIdentity)
+		return fmt.Errorf("unlink identity: %w", user.ErrLastIdentity)
 	}
 
 	if err := tx.Commit(ctx); err != nil {

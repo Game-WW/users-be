@@ -3,8 +3,6 @@ package user
 import (
 	"fmt"
 	"slices"
-
-	"github.com/Game-WW/users-be/pkg/errs"
 )
 
 type Provider string
@@ -24,7 +22,7 @@ func Providers() []Provider {
 func ParseProvider(s string) (Provider, error) {
 	p := Provider(s)
 	if !slices.Contains(providers, p) {
-		return "", fmt.Errorf("unknown provider %q: %w", s, errs.ErrInvalidArgument)
+		return "", fmt.Errorf("unknown provider %q: %w", s, ErrInvalidProvider)
 	}
 
 	return p, nil

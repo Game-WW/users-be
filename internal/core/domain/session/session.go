@@ -2,13 +2,12 @@ package session
 
 import (
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"time"
-
-	"github.com/Game-WW/users-be/pkg/errs"
 )
 
-var ErrExpired = fmt.Errorf("session expired: %w", errs.ErrUnauthenticated)
+var ErrExpired = errors.New("session expired")
 
 type State struct {
 	UserID    string

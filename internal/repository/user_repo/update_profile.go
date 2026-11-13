@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Game-WW/users-be/internal/core/application/commands"
+	"github.com/Game-WW/users-be/internal/core/domain/user"
 	"github.com/Game-WW/users-be/pkg/errs"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -39,7 +40,7 @@ func (r *Repository) UpdateProfile(ctx context.Context, cmd commands.UpdateProfi
 			pgErr.ConstraintName == "users_nickname_lower_unique"
 
 		if isNicknameUniqueViolation {
-			return errs.ErrNicknameTaken
+			return user.ErrNicknameTaken
 		}
 		return fmt.Errorf("execute update profile: %w", err)
 	}
