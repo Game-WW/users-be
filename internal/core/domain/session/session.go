@@ -2,11 +2,8 @@ package session
 
 import (
 	"crypto/rand"
-	"errors"
 	"time"
 )
-
-var ErrExpired = errors.New("session expired")
 
 type State struct {
 	UserID    string
