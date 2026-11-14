@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/Game-WW/users-be/internal/core/application/commands"
 	"github.com/Game-WW/users-be/internal/core/domain/user"
@@ -21,22 +22,37 @@ type Verifier struct {
 }
 
 func NewVerifier(clientID, clientSecret string) *Verifier {
+	transport := &http.Transport{
+		MaxConnsPerHost:     10,
+		MaxIdleConns:        10,
+		MaxIdleConnsPerHost: 10,
+		IdleConnTimeout:     30 * time.Second,
+		TLSHandshakeTimeout: 5 * time.Second,
+	}
 	return &Verifier{
 		clientID:     clientID,
 		clientSecret: clientSecret,
-		httpClient:   &http.Client{},
+		httpClient: &http.Client{
+			Timeout:   10 * time.Second,
+			Transport: transport,
+		},
 	}
 }
 
 func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (user.ExternalIdentity, error) {
-	code := creds.Code
-	if code == "" {
-		return user.ExternalIdentity{}, fmt.Errorf("empty code: %w", errs.ErrUnauthenticated)
+	if creds.Token != "" && creds.Code != "" {
+		return user.ExternalIdentity{}, fmt.Errorf("ambiguous yandex credentials: %w", errs.ErrInvalidArgument)
 	}
-
-	accessToken, err := v.exchangeCode(ctx, code, creds.CodeVerifier)
-	if err != nil {
-		return user.ExternalIdentity{}, err
+	accessToken := creds.Token
+	if accessToken == "" {
+		if creds.Code == "" {
+			return user.ExternalIdentity{}, fmt.Errorf("empty yandex credentials: %w", errs.ErrUnauthenticated)
+		}
+		var err error
+		accessToken, err = v.exchangeCode(ctx, creds.Code, creds.CodeVerifier)
+		if err != nil {
+			return user.ExternalIdentity{}, err
+		}
 	}
 
 	ydUser, err := v.getUserInfo(ctx, accessToken)
@@ -44,10 +60,24 @@ func (v *Verifier) Verify(ctx context.Context, creds commands.AuthCredentials) (
 		return user.ExternalIdentity{}, err
 	}
 
+	if ydUser.ID == "" || (creds.Token != "" && ydUser.ClientID != v.clientID) {
+		return user.ExternalIdentity{}, fmt.Errorf("invalid yandex identity or token client: %w", errs.ErrUnauthenticated)
+	}
+
+	email := strings.TrimSpace(ydUser.DefaultEmail)
+	if email == "" {
+		for _, candidate := range ydUser.Emails {
+			if candidate = strings.TrimSpace(candidate); candidate != "" {
+				email = candidate
+				break
+			}
+		}
+	}
+
 	return user.ExternalIdentity{
 		Provider: user.ProviderYandex,
 		Subject:  ydUser.ID,
-		Email:    ydUser.DefaultEmail,
+		Email:    email,
 	}, nil
 }
 
@@ -73,7 +103,10 @@ func (v *Verifier) exchangeCode(ctx context.Context, code, codeVerifier string) 
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("read token response body: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("yandex auth error: %s, body: %s: %w", resp.Status, string(body), errs.ErrUnauthenticated)
 	}
@@ -92,8 +125,10 @@ func (v *Verifier) exchangeCode(ctx context.Context, code, codeVerifier string) 
 }
 
 type ydUser struct {
-	ID           string `json:"id"`
-	DefaultEmail string `json:"default_email"`
+	ClientID     string   `json:"client_id"`
+	ID           string   `json:"id"`
+	DefaultEmail string   `json:"default_email"`
+	Emails       []string `json:"emails"`
 }
 
 func (v *Verifier) getUserInfo(ctx context.Context, accessToken string) (*ydUser, error) {
@@ -109,9 +144,15 @@ func (v *Verifier) getUserInfo(ctx context.Context, accessToken string) (*ydUser
 	}
 	defer resp.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read user info response body: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("yandex user info error: %s, body: %s", resp.Status, string(body))
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+			return nil, fmt.Errorf("yandex user info status %d: %w", resp.StatusCode, errs.ErrUnauthenticated)
+		}
+		return nil, fmt.Errorf("yandex user info status %d", resp.StatusCode)
 	}
 
 	var u ydUser
