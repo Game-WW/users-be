@@ -10,7 +10,6 @@ import (
 	"github.com/Game-WW/users-be/internal/core/domain/user"
 	"github.com/Game-WW/users-be/internal/infrastructure/clock"
 	"github.com/Game-WW/users-be/internal/infrastructure/geoip"
-	"github.com/Game-WW/users-be/internal/infrastructure/github"
 	"github.com/Game-WW/users-be/internal/infrastructure/google"
 	"github.com/Game-WW/users-be/internal/infrastructure/jwt"
 	"github.com/Game-WW/users-be/internal/infrastructure/yandex"
@@ -32,16 +31,13 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 	if cfg.GoogleClientID != "" {
 		verifiers[user.ProviderGoogle] = google.NewVerifier(cfg.GoogleClientID)
 	}
-	if cfg.GitHubClientID != "" && cfg.GitHubClientSecret != "" {
-		verifiers[user.ProviderGitHub] = github.NewVerifier(cfg.GitHubClientID, cfg.GitHubClientSecret)
-	}
 
 	if cfg.YandexClientID != "" && cfg.YandexClientSecret != "" {
 		verifiers[user.ProviderYandex] = yandex.NewVerifier(cfg.YandexClientID, cfg.YandexClientSecret)
 	}
 
 	if len(verifiers) == 0 {
-		return nil, errors.New("no login provider configured: set GOOGLE_CLIENT_ID or GITHUB_CLIENT_ID")
+		return nil, errors.New("no login provider configured: set GOOGLE_CLIENT_ID or YANDEX_CLIENT_ID and YANDEX_CLIENT_SECRET")
 	}
 
 	return rpc.NewServer(

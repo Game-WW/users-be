@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS user_identities (
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    provider   TEXT NOT NULL,
+    provider   TEXT NOT NULL CHECK (provider IN ('google', 'yandex')),
     subject    TEXT NOT NULL,
     email      TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

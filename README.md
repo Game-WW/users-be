@@ -6,7 +6,7 @@ Backend-сервис пользователей на Go. Сервис предо
 
 ## Возможности
 
-- Вход через настроенных внешних провайдеров: Google, GitHub и Yandex.
+- Вход через настроенных внешних провайдеров: Google и Yandex.
 - Создание пользователя при первом входе и привязка нескольких провайдеров к одному пользователю.
 - Access JWT и ротация refresh-токенов; refresh-токены хранятся в БД только в виде хеша.
 - Выход с отзывом текущей refresh-сессии.
@@ -64,7 +64,7 @@ flowchart TD
 
 | Метод | Путь | Назначение |
 |---|---|---|
-| `POST` | `/api/v1/auth/login/{provider}` | Вход через `google`, `github` или `yandex` |
+| `POST` | `/api/v1/auth/login/{provider}` | Вход через `google` или `yandex` |
 | `POST` | `/api/v1/auth/refresh` | Обновление access- и refresh-cookie |
 | `POST` | `/api/v1/auth/logout` | Отзыв текущей refresh-сессии и очистка cookies |
 | `GET` | `/api/v1/users/me` | Получить текущий профиль |
@@ -75,7 +75,7 @@ flowchart TD
 
 `PATCH /api/v1/users/me` принимает необязательные `nickname`, `location` и `show_online_status`. Отсутствующие поля не меняются. Пустой nickname отклоняется.
 
-При входе Google передаёт `id_token` в `Authorization`. Для GitHub и Yandex используются `x-auth-code` и, при PKCE, `x-code-verifier`. Успешный вход возвращает токены через gRPC response metadata; gateway выставляет их как HttpOnly cookies.
+При входе Google передаёт `id_token` в `Authorization`; Yandex использует `x-auth-code` и, при PKCE, `x-code-verifier`. Успешный вход возвращает токены через gRPC response metadata; gateway выставляет их как HttpOnly cookies.
 
 ## GeoIP
 
@@ -138,12 +138,10 @@ docker compose up -d --build
 | `ACCESS_TOKEN_TTL` | `15m` | Срок жизни access JWT |
 | `REFRESH_TOKEN_TTL` | `720h` | Срок refresh-сессии; должен совпадать с настройкой refresh-cookie в gateway-be |
 | `GOOGLE_CLIENT_ID` | пусто | Включает вход Google, когда задан |
-| `GITHUB_CLIENT_ID` | пусто | Client ID GitHub; используется вместе с secret |
-| `GITHUB_CLIENT_SECRET` | пусто | Client secret GitHub |
 | `YANDEX_CLIENT_ID` | пусто | Client ID Yandex; используется вместе с secret |
 | `YANDEX_CLIENT_SECRET` | пусто | Client secret Yandex |
 
-Должен быть настроен хотя бы один провайдер: Google либо полная пара GitHub/Yandex.
+Должен быть настроен хотя бы один провайдер: `GOOGLE_CLIENT_ID` либо пара `YANDEX_CLIENT_ID` и `YANDEX_CLIENT_SECRET`.
 
 ## Проверки
 

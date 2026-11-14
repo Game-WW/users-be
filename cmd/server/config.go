@@ -17,8 +17,6 @@ type config struct {
 	JWTSecret          string
 	AccessTokenTTL     time.Duration
 	RefreshTokenTTL    time.Duration
-	GitHubClientID     string
-	GitHubClientSecret string
 	YandexClientID     string
 	YandexClientSecret string
 }
@@ -41,9 +39,6 @@ func loadConfig() (config, error) {
 	cfg.DSN = dsn.String()
 
 	cfg.GoogleClientID = os.Getenv("GOOGLE_CLIENT_ID")
-
-	cfg.GitHubClientID = os.Getenv("GITHUB_CLIENT_ID")
-	cfg.GitHubClientSecret = os.Getenv("GITHUB_CLIENT_SECRET")
 
 	cfg.YandexClientID = os.Getenv("YANDEX_CLIENT_ID")
 	cfg.YandexClientSecret = os.Getenv("YANDEX_CLIENT_SECRET")

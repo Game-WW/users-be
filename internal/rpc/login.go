@@ -22,9 +22,9 @@ func (s *Server) Login(
 	authorization := bearerToken(ctx)
 
 	creds := commands.AuthCredentials{
-		Token:        authorization, // Для Google
-		Code:         code,          // Для GitHub
-		CodeVerifier: codeVerifier,  // Для GitHub PKCE
+		Token:        authorization,
+		Code:         code,
+		CodeVerifier: codeVerifier,
 	}
 
 	result, err := s.login.Handle(ctx, commands.LoginCommand{

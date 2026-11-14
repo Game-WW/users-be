@@ -20,9 +20,9 @@ func (s *Server) LinkIdentity(
 	userID := metaValue(ctx, userIDMetaKey)
 
 	creds := commands.AuthCredentials{
-		Token:        bearerToken(ctx),                     // Для Google
-		Code:         metaValue(ctx, xAuthCodeMetaKey),     // Для GitHub
-		CodeVerifier: metaValue(ctx, xCodeVerifierMetaKey), // Для GitHub PKCE
+		Token:        bearerToken(ctx),
+		Code:         metaValue(ctx, xAuthCodeMetaKey),
+		CodeVerifier: metaValue(ctx, xCodeVerifierMetaKey),
 	}
 
 	result, err := s.linkIdentity.Handle(ctx, commands.LinkIdentityCommand{

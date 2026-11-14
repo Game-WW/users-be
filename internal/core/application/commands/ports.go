@@ -16,9 +16,9 @@ type AccessTokenIssuer interface {
 }
 
 type AuthCredentials struct {
-	Token        string // Google
-	Code         string // GitHub
-	CodeVerifier string // GitHub PKCE
+	Token        string
+	Code         string
+	CodeVerifier string
 }
 
 type IdentityVerifier interface {

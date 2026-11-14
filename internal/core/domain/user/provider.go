@@ -9,11 +9,10 @@ type Provider string
 
 const (
 	ProviderGoogle Provider = "google"
-	ProviderGitHub Provider = "github"
 	ProviderYandex Provider = "yandex"
 )
 
-var providers = []Provider{ProviderGoogle, ProviderGitHub, ProviderYandex}
+var providers = []Provider{ProviderGoogle, ProviderYandex}
 
 func Providers() []Provider {
 	return slices.Clone(providers)
