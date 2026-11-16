@@ -40,14 +40,38 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 		return nil, errors.New("no login provider configured: set GOOGLE_CLIENT_ID or YANDEX_CLIENT_ID and YANDEX_CLIENT_SECRET")
 	}
 
+	loginHandler := commands.NewLoginHandler(
+		verifiers,
+		users,
+		sessions,
+		access,
+		clk,
+		locationResolver,
+		cfg.AccessTokenTTL,
+		cfg.RefreshTokenTTL,
+	)
+	refreshHandler := commands.NewRefreshHandler(
+		sessions,
+		access,
+		clk,
+		cfg.AccessTokenTTL,
+		cfg.RefreshTokenTTL,
+	)
+	logoutHandler := commands.NewLogoutHandler(sessions)
+	getMeHandler := queries.NewGetMeHandler(users)
+	listIdentitiesHandler := queries.NewListIdentitiesHandler(users)
+	linkIdentityHandler := commands.NewLinkIdentityHandler(verifiers, users, clk)
+	unlinkIdentityHandler := commands.NewUnlinkIdentityHandler(users)
+	updateProfileHandler := commands.NewUpdateProfileHandler(users)
+
 	return rpc.NewServer(
-		commands.NewLoginHandler(verifiers, users, sessions, access, clk, locationResolver, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
-		commands.NewRefreshHandler(sessions, access, clk, cfg.AccessTokenTTL, cfg.RefreshTokenTTL),
-		commands.NewLogoutHandler(sessions),
-		queries.NewGetMeHandler(users),
-		queries.NewListIdentitiesHandler(users),
-		commands.NewLinkIdentityHandler(verifiers, users, clk),
-		commands.NewUnlinkIdentityHandler(users),
-		commands.NewUpdateProfileHandler(users),
+		loginHandler,
+		refreshHandler,
+		logoutHandler,
+		getMeHandler,
+		listIdentitiesHandler,
+		linkIdentityHandler,
+		unlinkIdentityHandler,
+		updateProfileHandler,
 	), nil
 }
