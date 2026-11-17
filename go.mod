@@ -3,7 +3,7 @@ module github.com/Game-WW/users-be
 go 1.26.1
 
 require (
-	github.com/Game-WW/gateway-be v0.0.0-20261108150246-a3408449944e
+	github.com/Game-WW/gateway-be v0.0.0-20261117204721-2048dc992b18
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jackc/pgx/v5 v5.11.0

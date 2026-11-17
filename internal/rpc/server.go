@@ -33,19 +33,23 @@ type (
 	updateProfileHandler interface {
 		Handle(context.Context, commands.UpdateProfileCommand) error
 	}
+	setAvatarFileIDHandler interface {
+		Handle(context.Context, commands.SetAvatarFileIDCommand) error
+	}
 )
 
 type Server struct {
 	userspb.UnimplementedUsersServiceServer
 
-	login          loginHandler
-	refresh        refreshHandler
-	logout         logoutHandler
-	getMe          getMeHandler
-	listIdentities listIdentitiesHandler
-	linkIdentity   linkIdentityHandler
-	unlinkIdentity unlinkIdentityHandler
-	updateProfile  updateProfileHandler
+	login           loginHandler
+	refresh         refreshHandler
+	logout          logoutHandler
+	getMe           getMeHandler
+	listIdentities  listIdentitiesHandler
+	linkIdentity    linkIdentityHandler
+	unlinkIdentity  unlinkIdentityHandler
+	updateProfile   updateProfileHandler
+	setAvatarFileID setAvatarFileIDHandler
 }
 
 var _ userspb.UsersServiceServer = (*Server)(nil)
@@ -59,15 +63,17 @@ func NewServer(
 	linkIdentity linkIdentityHandler,
 	unlinkIdentity unlinkIdentityHandler,
 	updateProfile updateProfileHandler,
+	setAvatarFileID setAvatarFileIDHandler,
 ) *Server {
 	return &Server{
-		login:          login,
-		refresh:        refresh,
-		logout:         logout,
-		getMe:          getMe,
-		listIdentities: listIdentities,
-		linkIdentity:   linkIdentity,
-		unlinkIdentity: unlinkIdentity,
-		updateProfile:  updateProfile,
+		login:           login,
+		refresh:         refresh,
+		logout:          logout,
+		getMe:           getMe,
+		listIdentities:  listIdentities,
+		linkIdentity:    linkIdentity,
+		unlinkIdentity:  unlinkIdentity,
+		updateProfile:   updateProfile,
+		setAvatarFileID: setAvatarFileID,
 	}
 }

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     location            TEXT NOT NULL DEFAULT '',
     show_online_status  BOOLEAN NOT NULL DEFAULT TRUE,
     password_hash       TEXT,
+    avatar_file_id      TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

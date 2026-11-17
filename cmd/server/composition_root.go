@@ -63,6 +63,7 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 	linkIdentityHandler := commands.NewLinkIdentityHandler(verifiers, users, clk)
 	unlinkIdentityHandler := commands.NewUnlinkIdentityHandler(users)
 	updateProfileHandler := commands.NewUpdateProfileHandler(users)
+	setAvatarFileIDHandler := commands.NewSetAvatarFileIDHandler(users)
 
 	return rpc.NewServer(
 		loginHandler,
@@ -73,5 +74,6 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 		linkIdentityHandler,
 		unlinkIdentityHandler,
 		updateProfileHandler,
+		setAvatarFileIDHandler,
 	), nil
 }
