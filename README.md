@@ -13,6 +13,7 @@ Backend-сервис пользователей на Go. Сервис предо
 - Получение и изменение профиля: nickname, location и show_online_status.
 - Просмотр, привязка и отвязка внешних identities.
 - GeoIP-определение примерной локации нового пользователя по клиентскому IP через `ipapi.co`.
+- Загрузка, получение и удаление аватара через хранилище S3/MinIO.
 
 ## Структура
 
@@ -24,6 +25,7 @@ internal/core/application/queries/  получение профиля и identit
 internal/infrastructure/            Postgres, GeoIP, OAuth-провайдеры, JWT и часы
 internal/repository/                PostgreSQL-реализации портов
 internal/rpc/                       gRPC-адаптеры и metadata
+internal/infrastructure/s3/         хранение аватаров в S3-совместимом объектном хранилище
 migrations/                         SQL-схема и задания pg_cron
 ```
 
@@ -72,8 +74,12 @@ flowchart TD
 | `GET` | `/api/v1/identities` | Список привязанных провайдеров |
 | `POST` | `/api/v1/identities/{provider}` | Привязать провайдера |
 | `DELETE` | `/api/v1/identities/{provider}` | Отвязать провайдера, если остаётся способ входа |
+| `GET` | `/api/v1/users/{user_id}/avatar` | Получить аватар пользователя |
+| `PATCH` | `/api/v1/users/avatar` | Загрузить аватар или удалить его при пустом `image` |
 
-`PATCH /api/v1/users/me` принимает необязательные `nickname`, `location` и `show_online_status`. Отсутствующие поля не меняются. Пустой nickname отклоняется.
+`PATCH /api/v1/users/me` принимает необязательные `nickname`, `location` и `show_online_status`. Отсутствующие поля не меняются. Nickname и location обрезаются по краям пробельных символов; nickname не может быть пустым. Nickname и location ограничены 20 символами Unicode.
+
+`PATCH /api/v1/users/avatar` принимает изображение в поле `image` в формате Base64. Поддерживаются JPEG, PNG и WebP размером до 5 МБ. Каждое измерение изображения должно быть от 64 до 4096 пикселей. Передайте пустое `image`, чтобы удалить аватар.
 
 При входе Google передаёт `id_token` в `Authorization`; Yandex использует `x-auth-code` и, при PKCE, `x-code-verifier`. Успешный вход возвращает токены через gRPC response metadata; gateway выставляет их как HttpOnly cookies.
 
@@ -85,11 +91,17 @@ flowchart TD
 
 GeoIP — приблизительная геолокация по IP, а не GPS. Ошибка GeoIP не должна блокировать вход; она записывается в лог, а пользователь создаётся с пустой локацией.
 
+## Аватары
+
+Аватары хранятся в S3-совместимом хранилище в бакете `S3_BUCKET`. При загрузке users-be сохраняет объект по ключу `avatars/{user_id}` с `Content-Type`, соответствующим формату изображения. Отсутствующий аватар возвращается как успешный ответ с пустым полем `image`.
+
+Локально используется MinIO как сервис `s3`; бакет создаётся автоматически при запуске users-be. Консоль MinIO доступна на порту `S3_CONSOLE_PORT` (по умолчанию `9001`), API — на `S3_API_PORT` (по умолчанию `9000`).
+
 ## База данных
 
 Таблицы создаются SQL-файлами в `migrations/` при первом запуске контейнера Postgres:
 
-- `users` — профиль пользователя, включая `nickname`, `location` и `show_online_status`.
+- `users` — профиль пользователя, включая `nickname`, `location`, `show_online_status` и `avatar_file_id`.
 - `user_identities` — внешние identities; удаление пользователя каскадно удаляет identities.
 - `refresh_tokens` — хеш refresh-токена, срок действия и метаданные сессии.
 - `pg_cron` — ежедневная очистка истёкших refresh-токенов и старых деталей запусков cron.
@@ -100,11 +112,11 @@ GeoIP — приблизительная геолокация по IP, а не G
 
 Нужны Go версии из `go.mod` и Docker Desktop.
 
-1. Создайте локальный `.env` на основе `.env.example` и укажите `DB_PASSWORD`, `JWT_SECRET` длиной не менее 32 символов и credentials хотя бы одного провайдера.
-2. Запустите Postgres:
+1. Создайте локальный `.env` на основе `.env.example` и укажите `DB_PASSWORD`, `JWT_SECRET` длиной не менее 32 символов, `S3_ACCESS_KEY`, `S3_SECRET_KEY` и credentials хотя бы одного провайдера.
+2. Запустите Postgres и MinIO:
 
    ```powershell
-   docker compose up -d db
+   docker compose up -d db s3
    ```
 
 3. Запустите users-be локально:
@@ -140,8 +152,16 @@ docker compose up -d --build
 | `GOOGLE_CLIENT_ID` | пусто | Включает вход Google, когда задан |
 | `YANDEX_CLIENT_ID` | пусто | Client ID Yandex; используется вместе с secret |
 | `YANDEX_CLIENT_SECRET` | пусто | Client secret Yandex |
+| `S3_API_PORT` | `9000` | Порт API MinIO на хосте |
+| `S3_CONSOLE_PORT` | `9001` | Порт веб-консоли MinIO на хосте |
+| `S3_ENDPOINT` | `http://localhost:9000` | S3 endpoint; внутри Docker Compose задаётся как `http://s3:9000` |
+| `S3_BUCKET` | `media` | Бакет для аватаров |
+| `S3_REGION` | `us-east-1` | Регион S3 |
+| `S3_ACCESS_KEY` | обязательно | Ключ доступа S3/MinIO |
+| `S3_SECRET_KEY` | обязательно | Секретный ключ S3/MinIO |
 
 Должен быть настроен хотя бы один провайдер: `GOOGLE_CLIENT_ID` либо пара `YANDEX_CLIENT_ID` и `YANDEX_CLIENT_SECRET`.
+Для запуска приложения также обязательны `S3_ACCESS_KEY` и `S3_SECRET_KEY`.
 
 ## Проверки
 

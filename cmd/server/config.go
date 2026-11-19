@@ -19,6 +19,11 @@ type config struct {
 	RefreshTokenTTL    time.Duration
 	YandexClientID     string
 	YandexClientSecret string
+	S3Endpoint         string
+	S3Bucket           string
+	S3Region           string
+	S3AccessKey        string
+	S3SecretKey        string
 }
 
 func loadConfig() (config, error) {
@@ -54,6 +59,16 @@ func loadConfig() (config, error) {
 	// Должен совпадать с refreshTokenTTL в gateway-be (internal/proxy/cookies.go).
 	if cfg.RefreshTokenTTL, err = ttl("REFRESH_TOKEN_TTL", "720h"); err != nil {
 		return config{}, err
+	}
+
+	cfg.S3Endpoint = env("S3_ENDPOINT", "http://localhost:9000")
+	cfg.S3Bucket = env("S3_BUCKET", "media")
+	cfg.S3Region = env("S3_REGION", "us-east-1")
+	cfg.S3AccessKey = os.Getenv("S3_ACCESS_KEY")
+	cfg.S3SecretKey = os.Getenv("S3_SECRET_KEY")
+
+	if cfg.S3AccessKey == "" || cfg.S3SecretKey == "" {
+		return config{}, fmt.Errorf("S3_ACCESS_KEY and S3_SECRET_KEY are required")
 	}
 
 	return cfg, nil

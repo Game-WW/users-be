@@ -33,23 +33,27 @@ type (
 	updateProfileHandler interface {
 		Handle(context.Context, commands.UpdateProfileCommand) error
 	}
-	setAvatarFileIDHandler interface {
-		Handle(context.Context, commands.SetAvatarFileIDCommand) error
+	uploadAvatarHandler interface {
+		Handle(context.Context, commands.UploadAvatarCommand) error
+	}
+	getAvatarHandler interface {
+		Handle(context.Context, queries.GetAvatarQuery) (queries.GetAvatarResult, error)
 	}
 )
 
 type Server struct {
 	userspb.UnimplementedUsersServiceServer
 
-	login           loginHandler
-	refresh         refreshHandler
-	logout          logoutHandler
-	getMe           getMeHandler
-	listIdentities  listIdentitiesHandler
-	linkIdentity    linkIdentityHandler
-	unlinkIdentity  unlinkIdentityHandler
-	updateProfile   updateProfileHandler
-	setAvatarFileID setAvatarFileIDHandler
+	login          loginHandler
+	refresh        refreshHandler
+	logout         logoutHandler
+	getMe          getMeHandler
+	listIdentities listIdentitiesHandler
+	linkIdentity   linkIdentityHandler
+	unlinkIdentity unlinkIdentityHandler
+	updateProfile  updateProfileHandler
+	uploadAvatar   uploadAvatarHandler
+	getAvatar      getAvatarHandler
 }
 
 var _ userspb.UsersServiceServer = (*Server)(nil)
@@ -63,17 +67,19 @@ func NewServer(
 	linkIdentity linkIdentityHandler,
 	unlinkIdentity unlinkIdentityHandler,
 	updateProfile updateProfileHandler,
-	setAvatarFileID setAvatarFileIDHandler,
+	uploadAvatar uploadAvatarHandler,
+	getAvatar getAvatarHandler,
 ) *Server {
 	return &Server{
-		login:           login,
-		refresh:         refresh,
-		logout:          logout,
-		getMe:           getMe,
-		listIdentities:  listIdentities,
-		linkIdentity:    linkIdentity,
-		unlinkIdentity:  unlinkIdentity,
-		updateProfile:   updateProfile,
-		setAvatarFileID: setAvatarFileID,
+		login:          login,
+		refresh:        refresh,
+		logout:         logout,
+		getMe:          getMe,
+		listIdentities: listIdentities,
+		linkIdentity:   linkIdentity,
+		unlinkIdentity: unlinkIdentity,
+		updateProfile:  updateProfile,
+		uploadAvatar:   uploadAvatar,
+		getAvatar:      getAvatar,
 	}
 }

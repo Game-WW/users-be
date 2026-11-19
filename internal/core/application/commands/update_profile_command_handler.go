@@ -3,8 +3,8 @@ package commands
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/Game-WW/users-be/internal/core/domain/user"
 	"github.com/Game-WW/users-be/pkg/errs"
 )
 
@@ -32,12 +32,8 @@ func (h *UpdateProfileHandler) Handle(ctx context.Context, cmd UpdateProfileComm
 		return nil
 	}
 
-	if cmd.Nickname != nil {
-		nickname := strings.TrimSpace(*cmd.Nickname)
-		if nickname == "" {
-			return fmt.Errorf("nickname cannot be empty: %w", errs.ErrInvalidArgument)
-		}
-		cmd.Nickname = &nickname
+	if err := user.Validate(cmd.Nickname, cmd.Location); err != nil {
+		return err
 	}
 
 	if err := h.profiles.UpdateProfile(ctx, cmd); err != nil {

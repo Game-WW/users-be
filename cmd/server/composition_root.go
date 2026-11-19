@@ -12,13 +12,14 @@ import (
 	"github.com/Game-WW/users-be/internal/infrastructure/geoip"
 	"github.com/Game-WW/users-be/internal/infrastructure/google"
 	"github.com/Game-WW/users-be/internal/infrastructure/jwt"
+	"github.com/Game-WW/users-be/internal/infrastructure/s3"
 	"github.com/Game-WW/users-be/internal/infrastructure/yandex"
 	"github.com/Game-WW/users-be/internal/repository/session_repo"
 	"github.com/Game-WW/users-be/internal/repository/user_repo"
 	"github.com/Game-WW/users-be/internal/rpc"
 )
 
-func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
+func buildServer(cfg config, pool *pgxpool.Pool, storage *s3.Storage) (*rpc.Server, error) {
 	var (
 		users            = user_repo.New(pool)
 		sessions         = session_repo.New(pool)
@@ -63,7 +64,8 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 	linkIdentityHandler := commands.NewLinkIdentityHandler(verifiers, users, clk)
 	unlinkIdentityHandler := commands.NewUnlinkIdentityHandler(users)
 	updateProfileHandler := commands.NewUpdateProfileHandler(users)
-	setAvatarFileIDHandler := commands.NewSetAvatarFileIDHandler(users)
+	uploadAvatarHandler := commands.NewUploadAvatarHandler(storage)
+	getAvatarHandler := queries.NewGetAvatarHandler(storage)
 
 	return rpc.NewServer(
 		loginHandler,
@@ -74,6 +76,7 @@ func buildServer(cfg config, pool *pgxpool.Pool) (*rpc.Server, error) {
 		linkIdentityHandler,
 		unlinkIdentityHandler,
 		updateProfileHandler,
-		setAvatarFileIDHandler,
+		uploadAvatarHandler,
+		getAvatarHandler,
 	), nil
 }
