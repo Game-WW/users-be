@@ -19,6 +19,7 @@ func (s *Server) GetMe(
 
 	return &userspb.GetMeResponse{
 		User: toProtoUser(result),
+		AvatarFileId: result.AvatarFileID,
 	}, nil
 }
 

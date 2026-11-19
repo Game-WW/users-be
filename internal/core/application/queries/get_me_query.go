@@ -12,4 +12,5 @@ type GetMeResult struct {
 	Location         *string
 	ShowOnlineStatus bool
 	CreatedAt        time.Time
+	AvatarFileID     *string
 }
